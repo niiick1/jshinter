@@ -11,6 +11,7 @@ import jshinter.antlr.ECMAScriptParser.BitNotExpressionContext;
 import jshinter.antlr.ECMAScriptParser.BitOrExpressionContext;
 import jshinter.antlr.ECMAScriptParser.BitShiftExpressionContext;
 import jshinter.antlr.ECMAScriptParser.BitXOrExpressionContext;
+import jshinter.antlr.ECMAScriptParser.EqualityExpressionContext;
 
 public class JSHinterListener extends ECMAScriptBaseListener {
 
@@ -29,7 +30,7 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	}
 	
 	private void reportError(String msg, Token t) {
-		System.out.printf("%d,%d: %s.\n", t.getLine(), t.getCharPositionInLine() + 1, msg);
+		System.out.printf("%d,%d: %s.\n", t.getLine(), t.getCharPositionInLine() + t.getText().length() + 1, msg);
 	}
 
 	@Override
@@ -74,6 +75,25 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		
 		if (type >= 45 || type <= 50) {
 			reportError(String.format("Unexpected use of '%s'", t.getText()), t);
+		}
+	}
+
+	@Override
+	public void enterEqualityExpression(EqualityExpressionContext ctx) {
+		TokenStream ts = parser.getTokenStream();
+		Token t = ts.get(ctx.getChild(1).getSourceInterval().b);
+		String operator = t.getText();
+		
+		String shouldBe = null;
+		
+		if (operator.equals("==")) {
+			shouldBe = "===";
+		} else if (operator.equals("!=")) {
+			shouldBe = "!==";
+		}
+		
+		if (!shouldBe.equals(null)) {
+			reportError(String.format("Expected '%s' and instead saw '%s'", shouldBe, operator), t);
 		}
 	}
 }
