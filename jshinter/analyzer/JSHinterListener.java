@@ -1,5 +1,8 @@
 package jshinter.analyzer;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 
@@ -12,6 +15,8 @@ import jshinter.antlr.ECMAScriptParser.BitOrExpressionContext;
 import jshinter.antlr.ECMAScriptParser.BitShiftExpressionContext;
 import jshinter.antlr.ECMAScriptParser.BitXOrExpressionContext;
 import jshinter.antlr.ECMAScriptParser.EqualityExpressionContext;
+import jshinter.antlr.ECMAScriptParser.SingleExpressionContext;
+import jshinter.antlr.ECMAScriptParser.TypeofExpressionContext;
 
 public class JSHinterListener extends ECMAScriptBaseListener {
 
@@ -92,8 +97,27 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 			shouldBe = "!==";
 		}
 		
-		if (!shouldBe.equals(null)) {
+		if (shouldBe != null) {
 			reportError(String.format("Expected '%s' and instead saw '%s'", shouldBe, operator), t);
+		}
+		
+		if (ctx.getChild(0) instanceof TypeofExpressionContext) {
+			processTypeofExpression(ctx);
+		}
+	}
+
+	private void processTypeofExpression(EqualityExpressionContext ctx) {
+		TokenStream ts = parser.getTokenStream();
+		Token t = ts.get(ctx.getChild(2).getSourceInterval().a);
+		
+		List<String> allowedTypeof = Arrays.asList("undefined", "boolean", "number", "string", "function", "object");
+		
+		if (t.getType() == 99) {
+			String literal = t.getText();
+			literal = literal.substring(1, literal.length() - 1);
+			if (!allowedTypeof.contains(literal)) {
+				reportError(String.format("Invalid typeof value '%s'", literal), t);
+			}
 		}
 	}
 }
