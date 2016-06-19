@@ -27,7 +27,9 @@ import jshinter.antlr.ECMAScriptParser.EosContext;
 import jshinter.antlr.ECMAScriptParser.EqualityExpressionContext;
 import jshinter.antlr.ECMAScriptParser.ExpressionStatementContext;
 import jshinter.antlr.ECMAScriptParser.ForInStatementContext;
+import jshinter.antlr.ECMAScriptParser.ForStatementContext;
 import jshinter.antlr.ECMAScriptParser.ForVarInStatementContext;
+import jshinter.antlr.ECMAScriptParser.ForVarStatementContext;
 import jshinter.antlr.ECMAScriptParser.FormalParameterListContext;
 import jshinter.antlr.ECMAScriptParser.FunctionBodyContext;
 import jshinter.antlr.ECMAScriptParser.FunctionDeclarationContext;
@@ -45,9 +47,11 @@ import jshinter.antlr.ECMAScriptParser.SingleExpressionContext;
 import jshinter.antlr.ECMAScriptParser.SourceElementsContext;
 import jshinter.antlr.ECMAScriptParser.StatementContext;
 import jshinter.antlr.ECMAScriptParser.ThrowStatementContext;
+import jshinter.antlr.ECMAScriptParser.TryStatementContext;
 import jshinter.antlr.ECMAScriptParser.TypeofExpressionContext;
 import jshinter.antlr.ECMAScriptParser.VariableDeclarationContext;
 import jshinter.antlr.ECMAScriptParser.VariableStatementContext;
+import jshinter.antlr.ECMAScriptParser.WhileStatementContext;
 import jshinter.antlr.ECMAScriptParser.WithStatementContext;
 import jshinter.utility.ScopeManager;
 import jshinter.utility.ScopeType;
@@ -57,6 +61,10 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	private ECMAScriptParser parser;
 	
 	private ScopeManager scopeManager;
+	
+	private final int MAX_DEPTH = 2;
+	
+	private Integer blockDepth = -1;
 	
 	public JSHinterListener(ECMAScriptParser parser) {
 		this.parser = parser;
@@ -293,6 +301,7 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	@Override
 	public void exitDoStatement(DoStatementContext ctx) {
 		checkForSemicolon(ctx);
+		blockDepth -= 1;
 	}
 
 	@Override
@@ -333,6 +342,8 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		if (!checkForInStatement(ctx.statement())) {
 			reportForInError(ctx);
 		}
+		
+		blockDepth -= 1;
 	}
 
 	@Override
@@ -340,6 +351,8 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		if (!checkForInStatement(ctx.statement())) {
 			reportForInError(ctx);
 		}
+
+		blockDepth -= 1;
 	}
 	
 	private boolean checkForInStatement(StatementContext statement) {
@@ -376,5 +389,97 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	
 	private void reportForInError(ParserRuleContext ctx) {
 		reportError("The body of a for in should be wrapped in an if statement to filter unwanted properties from the prototype.", ctx.getStart());
+	}
+	
+	private void checkBlockDepth(ParserRuleContext ctx) {
+		if (blockDepth == MAX_DEPTH + 1) {
+			reportError(String.format("Blocks are nested too deeply (%d)", MAX_DEPTH + 1), ctx.getStart());
+		}
+	}
+
+	@Override
+	public void enterBlock(BlockContext ctx) {
+		if (ctx.getParent() instanceof StatementContext) return;
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void exitBlock(BlockContext ctx) {
+		if (ctx.getParent() instanceof StatementContext) return;
+		blockDepth -= 1;
+	}
+
+	@Override
+	public void enterIfStatement(IfStatementContext ctx) {
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void enterDoStatement(DoStatementContext ctx) {
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void enterWhileStatement(WhileStatementContext ctx) {
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void enterForStatement(ForStatementContext ctx) {
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void enterForVarStatement(ForVarStatementContext ctx) {
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void enterForInStatement(ForInStatementContext ctx) {
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void enterForVarInStatement(ForVarInStatementContext ctx) {
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void enterTryStatement(TryStatementContext ctx) {
+		blockDepth += 1;
+		checkBlockDepth(ctx);
+	}
+
+	@Override
+	public void exitIfStatement(IfStatementContext ctx) {
+		blockDepth -= 1;
+	}
+
+	@Override
+	public void exitWhileStatement(WhileStatementContext ctx) {
+		blockDepth -= 1;
+	}
+
+	@Override
+	public void exitForStatement(ForStatementContext ctx) {
+		blockDepth -= 1;
+	}
+
+	@Override
+	public void exitForVarStatement(ForVarStatementContext ctx) {
+		blockDepth -= 1;
+	}
+
+	@Override
+	public void exitTryStatement(TryStatementContext ctx) {
+		blockDepth -= 1;
 	}
 }
