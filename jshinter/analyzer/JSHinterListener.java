@@ -68,7 +68,7 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	}
 	
 	private void reportError(String msg, Token t) {
-		System.out.printf("%d,%d: %s.\n", t.getLine(), t.getCharPositionInLine() + t.getText().length() + 1, msg);
+		System.out.printf("%d,%d: %s.\n", t.getLine(), t.getCharPositionInLine() + 1, msg);
 	}
 
 	@Override
