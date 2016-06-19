@@ -6,6 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import jshinter.antlr.ECMAScriptBaseListener;
@@ -24,12 +25,16 @@ import jshinter.antlr.ECMAScriptParser.FunctionBodyContext;
 import jshinter.antlr.ECMAScriptParser.FunctionDeclarationContext;
 import jshinter.antlr.ECMAScriptParser.FunctionExpressionContext;
 import jshinter.antlr.ECMAScriptParser.IdentifierExpressionContext;
+import jshinter.antlr.ECMAScriptParser.IfStatementContext;
+import jshinter.antlr.ECMAScriptParser.IterationStatementContext;
 import jshinter.antlr.ECMAScriptParser.MemberDotExpressionContext;
 import jshinter.antlr.ECMAScriptParser.ProgramContext;
 import jshinter.antlr.ECMAScriptParser.SingleExpressionContext;
 import jshinter.antlr.ECMAScriptParser.SourceElementsContext;
+import jshinter.antlr.ECMAScriptParser.StatementContext;
 import jshinter.antlr.ECMAScriptParser.TypeofExpressionContext;
 import jshinter.antlr.ECMAScriptParser.VariableDeclarationContext;
+import jshinter.antlr.ECMAScriptParser.WithStatementContext;
 import jshinter.utility.ScopeManager;
 import jshinter.utility.ScopeType;
 
@@ -236,5 +241,21 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		TerminalNode token = ctx.Identifier();
 		scopeManager.registerUsage(token.getSymbol());
 	}
+
+	@Override
+	public void enterStatement(StatementContext ctx) {
+		ParserRuleContext parentContext = ctx.getParent();
+		if (parentContext instanceof IfStatementContext || parentContext instanceof IterationStatementContext
+				|| parentContext instanceof WithStatementContext) {
+			ParseTree childContext = ctx.getChild(0);
+			if (!(childContext instanceof BlockContext)) {
+				TokenStream ts = parser.getTokenStream();
+				Token t = ts.get(childContext.getSourceInterval().a);
+				
+				reportError(String.format("Expected '{' and instead saw '%s'", t.getText()), t);
+			}
+		}
+	}
+	
 	
 }
