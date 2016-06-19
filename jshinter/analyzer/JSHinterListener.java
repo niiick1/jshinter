@@ -62,17 +62,38 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	
 	private ScopeManager scopeManager;
 	
-	private final int MAX_DEPTH = 2;
+	private int MAX_DEPTH = 0;
+	private boolean verifyMaxDepth = false;
 	
-	private final int MAX_PARAMS = 4;
+	private int MAX_PARAMS = 0;
+	private boolean verifyMaxParams = false;
 	
-	private final int MAX_STATEMENTS = 4;
+	private int MAX_STATEMENTS = 0;
+	private boolean verifyMaxStatements = false;
 	
 	private Integer blockDepth = -1;
 	
 	public JSHinterListener(ECMAScriptParser parser) {
 		this.parser = parser;
 		scopeManager = new ScopeManager();
+	}
+	
+	public void verifyMaxDepth(int maxDepth) {
+		if (verifyMaxDepth = maxDepth > 0) {
+			MAX_DEPTH = maxDepth;
+		}
+	}
+	
+	public void verifyMaxParams(int maxParams) {
+		if (verifyMaxParams = maxParams > 0) {
+			MAX_PARAMS = maxParams;
+		}
+	}
+	
+	public void verifyMaxStatements(int maxStatements) {
+		if (verifyMaxStatements = maxStatements > 0) {
+			MAX_STATEMENTS = maxStatements;
+		}
 	}
 	
 	private void reportError(String msg, Token t) {
@@ -236,7 +257,7 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		if (ctx.sourceElements() != null) {
 			int statementCount = ctx.sourceElements().sourceElement().size();
 			
-			if (statementCount > MAX_STATEMENTS) {
+			if (verifyMaxStatements && statementCount > MAX_STATEMENTS) {
 				reportError(String.format("This function has too many statements (%d)", statementCount), ctx.getParent().getStart());
 			}
 		}
@@ -260,7 +281,7 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		}
 		
 		int numberOfParams = ctx.Identifier().size();
-		if (numberOfParams > MAX_PARAMS) {
+		if (verifyMaxParams && numberOfParams > MAX_PARAMS) {
 			reportError(String.format("This function has too many parameters (%d)", numberOfParams), ctx.getStart());
 		}
 	}
@@ -408,7 +429,7 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	}
 	
 	private void checkBlockDepth(ParserRuleContext ctx) {
-		if (blockDepth == MAX_DEPTH + 1) {
+		if (verifyMaxDepth && blockDepth == MAX_DEPTH + 1) {
 			reportError(String.format("Blocks are nested too deeply (%d)", MAX_DEPTH + 1), ctx.getStart());
 		}
 	}
