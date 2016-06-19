@@ -32,8 +32,10 @@ import jshinter.antlr.ECMAScriptParser.FunctionDeclarationContext;
 import jshinter.antlr.ECMAScriptParser.FunctionExpressionContext;
 import jshinter.antlr.ECMAScriptParser.IdentifierExpressionContext;
 import jshinter.antlr.ECMAScriptParser.IfStatementContext;
+import jshinter.antlr.ECMAScriptParser.InitialiserContext;
 import jshinter.antlr.ECMAScriptParser.IterationStatementContext;
 import jshinter.antlr.ECMAScriptParser.MemberDotExpressionContext;
+import jshinter.antlr.ECMAScriptParser.NewExpressionContext;
 import jshinter.antlr.ECMAScriptParser.ProgramContext;
 import jshinter.antlr.ECMAScriptParser.ReturnStatementContext;
 import jshinter.antlr.ECMAScriptParser.SingleExpressionContext;
@@ -323,5 +325,12 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	public void enterDebuggerStatement(DebuggerStatementContext ctx) {
 		reportError("Forgotten 'debugger' statement?", ctx.getStart());
 		checkForSemicolon(ctx);
+	}
+
+	@Override
+	public void enterNewExpression(NewExpressionContext ctx) {
+		if (!(ctx.getParent() instanceof InitialiserContext)) {
+			reportError("Do not use 'new' for side effects", ctx.getStart());
+		}
 	}
 }
