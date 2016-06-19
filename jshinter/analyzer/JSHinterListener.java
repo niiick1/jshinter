@@ -131,7 +131,7 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		Token t = ctx.getStart();
 		int type = t.getType();
 		
-		if (type >= 45 || type <= 50) {
+		if (type >= 45 && type <= 50) {
 			reportError(String.format("Unexpected use of '%s'", t.getText()), t);
 		}
 	}
