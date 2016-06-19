@@ -19,7 +19,13 @@ import jshinter.antlr.ECMAScriptParser.BitOrExpressionContext;
 import jshinter.antlr.ECMAScriptParser.BitShiftExpressionContext;
 import jshinter.antlr.ECMAScriptParser.BitXOrExpressionContext;
 import jshinter.antlr.ECMAScriptParser.BlockContext;
+import jshinter.antlr.ECMAScriptParser.BreakStatementContext;
+import jshinter.antlr.ECMAScriptParser.ContinueStatementContext;
+import jshinter.antlr.ECMAScriptParser.DebuggerStatementContext;
+import jshinter.antlr.ECMAScriptParser.DoStatementContext;
+import jshinter.antlr.ECMAScriptParser.EosContext;
 import jshinter.antlr.ECMAScriptParser.EqualityExpressionContext;
+import jshinter.antlr.ECMAScriptParser.ExpressionStatementContext;
 import jshinter.antlr.ECMAScriptParser.FormalParameterListContext;
 import jshinter.antlr.ECMAScriptParser.FunctionBodyContext;
 import jshinter.antlr.ECMAScriptParser.FunctionDeclarationContext;
@@ -29,11 +35,14 @@ import jshinter.antlr.ECMAScriptParser.IfStatementContext;
 import jshinter.antlr.ECMAScriptParser.IterationStatementContext;
 import jshinter.antlr.ECMAScriptParser.MemberDotExpressionContext;
 import jshinter.antlr.ECMAScriptParser.ProgramContext;
+import jshinter.antlr.ECMAScriptParser.ReturnStatementContext;
 import jshinter.antlr.ECMAScriptParser.SingleExpressionContext;
 import jshinter.antlr.ECMAScriptParser.SourceElementsContext;
 import jshinter.antlr.ECMAScriptParser.StatementContext;
+import jshinter.antlr.ECMAScriptParser.ThrowStatementContext;
 import jshinter.antlr.ECMAScriptParser.TypeofExpressionContext;
 import jshinter.antlr.ECMAScriptParser.VariableDeclarationContext;
+import jshinter.antlr.ECMAScriptParser.VariableStatementContext;
 import jshinter.antlr.ECMAScriptParser.WithStatementContext;
 import jshinter.utility.ScopeManager;
 import jshinter.utility.ScopeType;
@@ -257,5 +266,56 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		}
 	}
 	
-	
+	private void checkForSemicolon(ParserRuleContext ctx) {
+		ParseTree lastChild = ctx.getChild(ctx.getChildCount() - 1);
+		if (ctx.getChild(ctx.getChildCount() - 1) instanceof EosContext) {
+			EosContext eos = (EosContext) lastChild;
+			
+			TerminalNode semicolon = eos.SemiColon();
+			
+			if (semicolon == null) {
+				reportError("Missing semicolon", eos.getStop());
+			}
+		}
+	}
+
+	@Override
+	public void enterExpressionStatement(ExpressionStatementContext ctx) {
+		checkForSemicolon(ctx);
+	}
+
+	@Override
+	public void enterVariableStatement(VariableStatementContext ctx) {
+		checkForSemicolon(ctx);
+	}
+
+	@Override
+	public void enterDoStatement(DoStatementContext ctx) {
+		checkForSemicolon(ctx);
+	}
+
+	@Override
+	public void enterContinueStatement(ContinueStatementContext ctx) {
+		checkForSemicolon(ctx);
+	}
+
+	@Override
+	public void enterBreakStatement(BreakStatementContext ctx) {
+		checkForSemicolon(ctx);
+	}
+
+	@Override
+	public void enterReturnStatement(ReturnStatementContext ctx) {
+		checkForSemicolon(ctx);
+	}
+
+	@Override
+	public void enterThrowStatement(ThrowStatementContext ctx) {
+		checkForSemicolon(ctx);
+	}
+
+	@Override
+	public void enterDebuggerStatement(DebuggerStatementContext ctx) {
+		checkForSemicolon(ctx);
+	}
 }
