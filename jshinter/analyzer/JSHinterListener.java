@@ -64,6 +64,8 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	
 	private final int MAX_DEPTH = 2;
 	
+	private final int MAX_PARAMS = 4;
+	
 	private final int MAX_STATEMENTS = 4;
 	
 	private Integer blockDepth = -1;
@@ -255,6 +257,11 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	public void enterFormalParameterList(FormalParameterListContext ctx) {
 		for (TerminalNode id : ctx.Identifier()) {
 			scopeManager.defineVariable(id.getSymbol());
+		}
+		
+		int numberOfParams = ctx.Identifier().size();
+		if (numberOfParams > MAX_PARAMS) {
+			reportError(String.format("This function has too many parameters (%d)", numberOfParams), ctx.getStart());
 		}
 	}
 
