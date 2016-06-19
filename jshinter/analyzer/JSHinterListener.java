@@ -26,6 +26,8 @@ import jshinter.antlr.ECMAScriptParser.DoStatementContext;
 import jshinter.antlr.ECMAScriptParser.EosContext;
 import jshinter.antlr.ECMAScriptParser.EqualityExpressionContext;
 import jshinter.antlr.ECMAScriptParser.ExpressionStatementContext;
+import jshinter.antlr.ECMAScriptParser.ForInStatementContext;
+import jshinter.antlr.ECMAScriptParser.ForVarInStatementContext;
 import jshinter.antlr.ECMAScriptParser.FormalParameterListContext;
 import jshinter.antlr.ECMAScriptParser.FunctionBodyContext;
 import jshinter.antlr.ECMAScriptParser.FunctionDeclarationContext;
@@ -36,6 +38,7 @@ import jshinter.antlr.ECMAScriptParser.InitialiserContext;
 import jshinter.antlr.ECMAScriptParser.IterationStatementContext;
 import jshinter.antlr.ECMAScriptParser.MemberDotExpressionContext;
 import jshinter.antlr.ECMAScriptParser.NewExpressionContext;
+import jshinter.antlr.ECMAScriptParser.NotExpressionContext;
 import jshinter.antlr.ECMAScriptParser.ProgramContext;
 import jshinter.antlr.ECMAScriptParser.ReturnStatementContext;
 import jshinter.antlr.ECMAScriptParser.SingleExpressionContext;
@@ -332,5 +335,55 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 		if (!(ctx.getParent() instanceof InitialiserContext)) {
 			reportError("Do not use 'new' for side effects", ctx.getStart());
 		}
+	}
+
+	@Override
+	public void exitForInStatement(ForInStatementContext ctx) {
+		if (!checkForInStatement(ctx.statement())) {
+			reportForInError(ctx);
+		}
+	}
+
+	@Override
+	public void exitForVarInStatement(ForVarInStatementContext ctx) {
+		if (!checkForInStatement(ctx.statement())) {
+			reportForInError(ctx);
+		}
+	}
+	
+	private boolean checkForInStatement(StatementContext statement) {
+		if (statement.block() == null) {
+			if (statement.ifStatement() == null) {
+				return false;
+			}
+		} else {
+			IfStatementContext ifStmt = statement.block().statementList().statement(0).ifStatement();
+			// For-in must be wrapped with an if statement
+			if (ifStmt == null) {
+				return false;
+			} else {
+				// When on if (!expr), the first statement must be a 'continue'
+				if (ifStmt.expressionSequence().singleExpression(0) instanceof NotExpressionContext) {
+					List<StatementContext> statements;
+					BlockContext ifBlock = ifStmt.statement(0).block();
+
+					if (ifBlock != null) {
+						statements = ifBlock.statementList().statement();
+					} else {
+						statements = ifStmt.statement();
+					}
+					
+					if (statements.get(0).continueStatement() == null) {
+						return false;
+					}
+				}
+			}
+		}
+		
+		return true;
+	}
+	
+	private void reportForInError(ParserRuleContext ctx) {
+		reportError("The body of a for in should be wrapped in an if statement to filter unwanted properties from the prototype.", ctx.getStart());
 	}
 }
