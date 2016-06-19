@@ -316,6 +316,7 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 
 	@Override
 	public void enterDebuggerStatement(DebuggerStatementContext ctx) {
+		reportError("Forgotten 'debugger' statement?", ctx.getStart());
 		checkForSemicolon(ctx);
 	}
 }
