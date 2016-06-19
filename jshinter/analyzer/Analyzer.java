@@ -15,19 +15,9 @@ public class Analyzer {
 
 	public static void main(String[] args) throws Exception {
 		String inputFile = null;
-		Boolean debug = false;
+
         if (args.length > 0) {
-        	if (args[0].equals("-d")) {
-        		debug = true;
-        	} else {
-        		inputFile = args[0];
-        		
-        		for (int x = 1; x < args.length; x++) {
-        			if (args[x].equals("-d")) {
-        				debug = true;
-        			}
-        		}
-        	}
+    		inputFile = args[0];
         }
         
         InputStream is = System.in;
@@ -44,7 +34,7 @@ public class Analyzer {
         ParseTree tree = parser.program(); // parse
 
         ParseTreeWalker walker = new ParseTreeWalker(); // create standard walker
-        JSHinterListener listener = new JSHinterListener(parser, debug);
+        JSHinterListener listener = new JSHinterListener(parser);
         walker.walk(listener, tree); // initiate walk of tree with listener
 	}
 }

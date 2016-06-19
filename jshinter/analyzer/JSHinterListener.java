@@ -56,19 +56,10 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 
 	private ECMAScriptParser parser;
 	
-	private final Boolean DEBUG;
-	
 	private ScopeManager scopeManager;
 	
 	public JSHinterListener(ECMAScriptParser parser) {
 		this.parser = parser;
-		this.DEBUG = false;
-		scopeManager = new ScopeManager();
-	}
-	
-	public JSHinterListener(ECMAScriptParser parser, Boolean debugMode) {
-		this.parser = parser;
-		this.DEBUG = debugMode;
 		scopeManager = new ScopeManager();
 	}
 	
