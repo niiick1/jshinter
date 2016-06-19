@@ -248,7 +248,12 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	@Override
 	public void enterIdentifierExpression(IdentifierExpressionContext ctx) {
 		TerminalNode token = ctx.Identifier();
+		
 		scopeManager.registerUsage(token.getSymbol());
+		
+		if (token.getText().equals("eval")) {
+			reportError("eval can be harmful", token.getSymbol());
+		}
 	}
 
 	@Override
