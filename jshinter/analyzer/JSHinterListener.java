@@ -64,6 +64,8 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	
 	private final int MAX_DEPTH = 2;
 	
+	private final int MAX_STATEMENTS = 4;
+	
 	private Integer blockDepth = -1;
 	
 	public JSHinterListener(ECMAScriptParser parser) {
@@ -229,6 +231,13 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	@Override
 	public void exitFunctionBody(FunctionBodyContext ctx) {
 		scopeManager.unstack();
+		if (ctx.sourceElements() != null) {
+			int statementCount = ctx.sourceElements().sourceElement().size();
+			
+			if (statementCount > MAX_STATEMENTS) {
+				reportError(String.format("This function has too many statements (%d)", statementCount), ctx.getParent().getStart());
+			}
+		}
 	}
 
 	@Override
