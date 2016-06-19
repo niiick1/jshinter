@@ -281,37 +281,37 @@ public class JSHinterListener extends ECMAScriptBaseListener {
 	}
 
 	@Override
-	public void enterExpressionStatement(ExpressionStatementContext ctx) {
+	public void exitExpressionStatement(ExpressionStatementContext ctx) {
 		checkForSemicolon(ctx);
 	}
 
 	@Override
-	public void enterVariableStatement(VariableStatementContext ctx) {
+	public void exitVariableStatement(VariableStatementContext ctx) {
 		checkForSemicolon(ctx);
 	}
 
 	@Override
-	public void enterDoStatement(DoStatementContext ctx) {
+	public void exitDoStatement(DoStatementContext ctx) {
 		checkForSemicolon(ctx);
 	}
 
 	@Override
-	public void enterContinueStatement(ContinueStatementContext ctx) {
+	public void exitContinueStatement(ContinueStatementContext ctx) {
 		checkForSemicolon(ctx);
 	}
 
 	@Override
-	public void enterBreakStatement(BreakStatementContext ctx) {
+	public void exitBreakStatement(BreakStatementContext ctx) {
 		checkForSemicolon(ctx);
 	}
 
 	@Override
-	public void enterReturnStatement(ReturnStatementContext ctx) {
+	public void exitReturnStatement(ReturnStatementContext ctx) {
 		checkForSemicolon(ctx);
 	}
 
 	@Override
-	public void enterThrowStatement(ThrowStatementContext ctx) {
+	public void exitThrowStatement(ThrowStatementContext ctx) {
 		checkForSemicolon(ctx);
 	}
 
